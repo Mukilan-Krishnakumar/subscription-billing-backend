@@ -1,4 +1,5 @@
 from core.models import User, Subscription
+from core.helpers import generate_start_date, generate_end_date
 
 
 class CreateSubscriptionAction:
@@ -9,25 +10,37 @@ class CreateSubscriptionAction:
 
         self.user = self.data["user"]
         self.plan = self.data["plan"]
-        self.start_date = self.data["start_date"]
-        self.end_date = self.data["end_date"]
-        self.next_billing_date = self.data.get("next_billing_date")
 
     def check_existing_subscriptions(self):
         # TODO: Add date check also (based on end_date)
         subscriptions = Subscription.objects.filter(
             user=self.user,
-            plan=self.plan,
             status=Subscription.SubscriptionStatus.ACTIVE,
         )
         if subscriptions:
             return True
         return False
 
+    def get_start_date(self):
+        timezone_info = self.user.timezone_info
+        start_date = generate_start_date(timezone_info=timezone_info)
+        return start_date
+
+    def get_end_date(self, start_date):
+        plan = self.plan
+        billing_cycle = plan.billing_cycle
+        end_date = generate_end_date(billing_cycle=billing_cycle, start_date=start_date)
+        return end_date
+
     def execute(self):
         existing_subscription = self.check_existing_subscriptions()
         if not existing_subscription:
-            self.serializer.save()
+            subscription = self.serializer.save()
+            start_date = self.get_start_date()
+            end_date = self.get_end_date(start_date=start_date)
+            subscription.start_date = start_date
+            subscription.end_date = end_date
+            subscription.save(update_fields=["start_date", "end_date"])
             return True, {"message": "Successfully created subscription"}
 
         return False, {"error": "Subscription already exists"}

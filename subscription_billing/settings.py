@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -95,6 +96,10 @@ DATABASES = {
     }
 }
 
+
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
+
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
@@ -135,3 +140,52 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {lineno} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {asctime} {module} {lineno} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "root": {"handlers": ["console"], "level": "INFO", "formatter": "verbose"},
+    "loggers": {
+        "subscription_billing": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        }
+    },
+}
+
+
+CELERY_BEAT_SCHEDULE = {
+    "schedule_invoice": {
+        "task": "core.tasks.schedule_invoice",
+        "schedule": crontab(minute="*/1"),
+        "options": {
+            "expires": 15.0,
+        },
+    },
+    "mark_unpaid_invoices": {
+        "task": "core.tasks.mark_unpaid_invoices",
+        "schedule": crontab(minute="*/1"),
+        "options": {
+            "expires": 15.0,
+        },
+    },
+}

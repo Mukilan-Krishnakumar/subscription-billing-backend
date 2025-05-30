@@ -1,5 +1,5 @@
 import json
-from django.shortcuts import render
+import logging
 
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -8,6 +8,8 @@ from rest_framework.decorators import action
 from core import models
 from core import serializers as core_serializers
 from core.actions import subscription_actions
+
+logger = logging.getLogger(__name__)
 
 
 # Create your views here.
