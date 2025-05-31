@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block script_reference %}
+<script src="https://js.stripe.com/basil/stripe.js"></script>
+<script src="{% static 'js/planPage.js' %}"></script>
+{% endblock script_reference%}
+
+{% block content %}
+<section class="pricing-section">
+    <div class="pricing-container">
+        <div class="pricing-grid">
+            {% for plan in plans %}
+            <div class="pricing-card">
+                <div class="plan-header">
+                    <h2 class="plan-title">
+                        {{plan.name}} 
+                    </h2>
+                </div>
+
+                <div class="plan-pricing">
+                        <div class="price-section">
+                            <div class="price-display">
+                                <span class="price-amount">${{plan.price}}</span>
+                                <span class="price-period">{{plan.billing_cycle}}</span>
+                            </div>
+                        </div>
+                </div>
+
+                <div class="plan-cta">
+                    <button class="purchase-btn" id="{{plan.id}}">
+                        Purchase
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<style>
+.pricing-section {
+    background-color: #f8f9fa;
+    padding: 60px 20px;
+    min-height: 100vh;
+    display: flex;
+}
+
+.pricing-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    align-items: start;
+}
+
+.pricing-card {
+    background: white;
+    border-radius: 16px;
+    padding: 40px 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    height: fit-content;
+}
+
+.pricing-card:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+}
+
+.plan-header {
+    margin-bottom: 32px;
+}
+
+.plan-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+
+
+.plan-pricing {
+    margin-bottom: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #e9ecef;
+}
+
+.price-section {
+    text-align: left;
+}
+
+.price-display {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.price-amount {
+    font-size: 48px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1;
+}
+
+.price-period {
+    font-size: 18px;
+    color: #666;
+    font-weight: 500;
+}
+
+.price-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 8px 0;
+}
+
+.price-subtitle {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.plan-cta {
+    margin-top: auto;
+}
+
+.purchase-btn {
+    width: 100%;
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 16px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.purchase-btn:hover {
+    background: #218838;
+    transform: translateY(-1px);
+}
+
+.purchase-btn:active {
+    transform: translateY(0);
+}
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .pricing-section {
+        padding: 40px 15px;
+    }
+    
+    .pricing-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .pricing-card {
+        padding: 32px 24px;
+    }
+    
+    .plan-title {
+        font-size: 24px;
+    }
+    
+    .price-amount {
+        font-size: 40px;
+    }
+    
+    .price-title {
+        font-size: 28px;
+    }
+}
+
+@media (max-width: 480px) {
+    .pricing-card {
+        padding: 24px 20px;
+    }
+    
+    .plan-title {
+        font-size: 22px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .price-amount {
+        font-size: 36px;
+    }
+}
+
+/* Billed annually note */
+.pricing-card:first-child .price-subtitle::after {
+    content: " Billed in one lump sum annually for simplified accounting. Or $349/month if you prefer to pay monthly.";
+    display: block;
+    margin-top: 8px;
+    font-size: 14px;
+    color: #666;
+}
+</style>
+{% endblock content %}

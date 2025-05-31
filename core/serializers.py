@@ -31,7 +31,7 @@ class PlanSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Plan
-        fields = ["name", "price", "currency", "billing_cycle"]
+        fields = ["id", "name", "price", "currency", "billing_cycle"]
 
 
 class SubscriptionListSerializer(serializers.ModelSerializer):

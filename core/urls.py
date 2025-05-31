@@ -7,9 +7,15 @@ from core import views
 
 router = DefaultRouter()
 
-router.register(r"users", views.UserViewSet, basename="user")
-router.register(r"plans", views.PlanViewSet, basename="plan")
-router.register(r"subscriptions", views.SubscriptionViewSet, basename="subscription")
-router.register(r"invoices", views.InvoiceViewSet, basename="invoice")
+router.register(r"api/users", views.UserViewSet, basename="user")
+router.register(r"api/plans", views.PlanViewSet, basename="plan")
+router.register(
+    r"api/subscriptions", views.SubscriptionViewSet, basename="subscription"
+)
+router.register(r"api/invoices", views.InvoiceViewSet, basename="invoice")
+router.register(r"purchase", views.PurchaseViewSet, basename="purchase")
 
-urlpatterns = router.urls
+urlpatterns = [
+    path("checkout-session/", views.create_checkout_session),
+    path("check-stripe/", views.check_stripe_action),
+] + router.urls

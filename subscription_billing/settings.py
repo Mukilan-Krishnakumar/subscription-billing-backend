@@ -61,7 +61,7 @@ ROOT_URLCONF = "subscription_billing.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": ["templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -208,3 +208,6 @@ EMAIL_BACKEND = os.getenv("EMAIL_BACKEND")
 
 STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+
+
+BASE_URL = os.getenv("BASE_URL")

@@ -1,13 +1,24 @@
 import json
 import logging
 
+import stripe
+from django.conf import settings
+from django.views.generic.base import TemplateView
+from django.shortcuts import render
+from rest_framework.views import APIView
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.http import JsonResponse
 
 from core import models
 from core import serializers as core_serializers
 from core.actions import subscription_actions
+
+from core.actions.setup_actions import SetupStripeEntitiesAction
+from integrations.stripe.api_client import StripeApiClient
 
 logger = logging.getLogger(__name__)
 
@@ -67,3 +78,61 @@ class InvoiceViewSet(viewsets.ViewSet):
         queryset = models.Invoice.objects.all()
         serializer = core_serializers.InvoiceSerializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class PurchaseViewSet(viewsets.ViewSet):
+    @action(methods=["get"], detail=False)
+    def pricing(self, request):
+        queryset = models.Plan.objects.all()
+        serializer = core_serializers.PlanSerializer(queryset, many=True)
+        context = {"plans": serializer.data}
+        return render(request, "plan_page.html", context=context)
+
+    @action(methods=["get"], url_path="stripe-config", detail=False)
+    def stripe_config(self, request):
+        stripe_config = {"publicKey": settings.STRIPE_PUBLISHABLE_KEY}
+        return Response(stripe_config, status=200)
+
+    @action(methods=["post"], url_path="checkout-session", detail=False)
+    def checkout_session(self, request):
+        body = json.loads(request.body)
+        plan_id = body.get("plan_id")
+        domain_url = "http://localhost:8000/"
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+        # TODO: Handle Exception
+        plan = models.Plan.objects.get(id=plan_id)
+        price_id = plan.integration_info.get("stripe", {}).get("price_id")
+        try:
+            checkout_session = stripe.checkout.Session.create(
+                success_url=domain_url + "success?session_id={CHECKOUT_SESSION_ID}",
+                cancel_url=domain_url + "cancelled/",
+                payment_method_types=["card"],
+                mode="subscription",
+                line_items=[{"price": price_id, "quantity": 1}],
+            )
+            return Response({"sessionId": checkout_session["id"]})
+        except Exception as e:
+            return JsonResponse({"error": str(e)})
+
+
+@csrf_exempt
+def create_checkout_session(request):
+    if request.method == "POST":
+        body = json.loads(request.body)
+        plan_id = body.get("plan_id")
+        # TODO: Handle Exception
+        plan = models.Plan.objects.get(id=plan_id)
+        price_id = plan.integration_info.get("stripe", {}).get("price_id")
+        try:
+            checkout_session = StripeApiClient().create_checkout_session(
+                price_id=price_id
+            )
+            return JsonResponse({"sessionId": checkout_session["id"]})
+        except Exception as e:
+            return JsonResponse({"error": str(e)})
+
+
+# TODO: Port this to a management command
+def check_stripe_action(request):
+    SetupStripeEntitiesAction().execute()
+    return JsonResponse({"status": "ok"})

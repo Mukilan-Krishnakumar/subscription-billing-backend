@@ -16,6 +16,9 @@ class User(BaseModel):
     email = models.EmailField(unique=True)
     timezone_info = models.TextField()
 
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
 
 class Plan(BaseModel):
     class BillingCycle(models.TextChoices):
@@ -29,6 +32,10 @@ class Plan(BaseModel):
     billing_cycle = models.TextField(
         choices=BillingCycle.choices, default=BillingCycle.YEARLY
     )
+    integration_info = models.JSONField(default=dict)
+
+    def __str__(self):
+        return self.name
 
 
 class Subscription(BaseModel):
@@ -45,6 +52,9 @@ class Subscription(BaseModel):
         choices=SubscriptionStatus.choices, default=SubscriptionStatus.ACTIVE
     )
 
+    def __str__(self):
+        return f"{self.user}-{self.plan}-{self.status}"
+
 
 class Invoice(BaseModel):
     class InvoiceStatus(models.TextChoices):
@@ -60,3 +70,6 @@ class Invoice(BaseModel):
     status = models.TextField(
         choices=InvoiceStatus.choices, default=InvoiceStatus.PENDING
     )
+
+    def __str__(self):
+        return f"{self.subscription}-{self.status}"
