@@ -188,4 +188,23 @@ CELERY_BEAT_SCHEDULE = {
             "expires": 15.0,
         },
     },
+    "send_remainder_emails": {
+        "task": "core.tasks.send_remainder_emails",
+        "schedule": crontab(minute="*/1"),
+        "options": {
+            "expires": 15.0,
+        },
+    },
 }
+
+
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")
+EMAIL_PORT = os.getenv("EMAIL_POST")
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND")
+
+
+STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")

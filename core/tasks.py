@@ -2,8 +2,12 @@ import logging
 from zoneinfo import ZoneInfo
 from datetime import datetime, timezone, timedelta
 
+from django.db.models import Q
+from django.core.mail import send_mail
+from django.conf import settings
 from celery import shared_task
 from core.models import Invoice, Subscription
+from core.constants import STANDARD_DATE_FORMAT
 
 logger = logging.getLogger(__name__)
 
@@ -73,3 +77,38 @@ def mark_unpaid_invoices():
             logger.info(
                 "Marked invoice object as overdue for user: %s", user.first_name
             )
+
+
+@shared_task
+def send_remainder_emails():
+    # TODO: Make this much more UI friendly email - Templates
+    logger.info("Sending remainder emails")
+    invoices = Invoice.objects.filter(~Q(status=Invoice.InvoiceStatus.PAID))
+    utc_current_time = datetime.now(timezone.utc)
+    for invoice in invoices:
+        user = invoice.subscription.user
+        user_email = user.email
+        if invoice.status == Invoice.InvoiceStatus.OVERDUE:
+            send_mail(
+                subject="Invoice Overdue",
+                message="Please pay",
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[user_email],
+                fail_silently=False,
+            )
+        user_timezone_info = user.timezone_info
+        server_current_date = utc_current_time.astimezone(
+            ZoneInfo(user_timezone_info)
+        ).date()
+        user_due_date = invoice.due_date
+        if server_current_date <= user_due_date:
+            send_mail(
+                subject="Invoice Pending",
+                message=f"Please pay before {user_due_date.strftime(STANDARD_DATE_FORMAT)}",
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[user_email],
+                fail_silently=False,
+            )
+        else:
+            # TODO: Mark invoice as overdue
+            pass

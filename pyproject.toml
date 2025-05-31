@@ -12,4 +12,5 @@ dependencies = [
     "python-dateutil>=2.9.0.post0",
     "python-dotenv>=1.1.0",
     "redis>=6.2.0",
+    "stripe>=12.2.0",
 ]
