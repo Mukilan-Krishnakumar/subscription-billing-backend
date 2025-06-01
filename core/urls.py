@@ -14,8 +14,8 @@ router.register(
 )
 router.register(r"api/invoices", views.InvoiceViewSet, basename="invoice")
 router.register(r"purchase", views.PurchaseViewSet, basename="purchase")
+router.register(r"payment", views.PaymentViewSet, basename="payment")
 
 urlpatterns = [
     path("checkout-session/", views.create_checkout_session),
-    path("check-stripe/", views.check_stripe_action),
 ] + router.urls

@@ -1,10 +1,9 @@
 from core.models import User, Subscription
-from core.helpers import generate_start_date, generate_end_date
+from core.helpers import generate_end_date, get_current_date
 
 
 class CreateSubscriptionAction:
     def __init__(self, serializer):
-
         self.serializer = serializer
         self.data = serializer.validated_data
 
@@ -12,7 +11,10 @@ class CreateSubscriptionAction:
         self.plan = self.data["plan"]
 
     def check_existing_subscriptions(self):
-        # TODO: Add date check also (based on end_date)
+        """
+        Assumes that the periodic task which marks subscription as Cancelled
+        is working as intended.
+        """
         subscriptions = Subscription.objects.filter(
             user=self.user,
             status=Subscription.SubscriptionStatus.ACTIVE,
@@ -23,7 +25,7 @@ class CreateSubscriptionAction:
 
     def get_start_date(self):
         timezone_info = self.user.timezone_info
-        start_date = generate_start_date(timezone_info=timezone_info)
+        start_date = get_current_date(timezone_info=timezone_info)
         return start_date
 
     def get_end_date(self, start_date):
@@ -41,9 +43,9 @@ class CreateSubscriptionAction:
             subscription.start_date = start_date
             subscription.end_date = end_date
             subscription.save(update_fields=["start_date", "end_date"])
-            return True, {"message": "Successfully created subscription"}
+            return True, "Successfully created subscription"
 
-        return False, {"error": "Subscription already exists"}
+        return False, "Subscription already exists"
 
 
 class UnsubscribeAction:
@@ -58,7 +60,6 @@ class UnsubscribeAction:
             return None
 
     def get_active_subscription(self, user):
-        # TODO: Make this better
         try:
             subscription = Subscription.objects.get(
                 user=user, status=Subscription.SubscriptionStatus.ACTIVE
@@ -66,16 +67,21 @@ class UnsubscribeAction:
             return subscription
         except Subscription.DoesNotExist:
             return None
-        except Subscription.MultipleObjectsReturned:
-            return None
 
     def execute(self):
         user = self.get_user()
         if not user:
-            return {"error": "User doesn't exist with the given ID"}
-        subscription = self.get_active_subscription(user=user)
+            return False, "User with the given user_id doesn't exist"
+        user_name = user.first_name + user.last_name
+        try:
+            subscription = self.get_active_subscription(user=user)
+        except Subscription.MultipleObjectsReturned:
+            return False, "Multiple active subscriptions exist at the same time"
         if not subscription:
-            return {"error": "There is no active subscription"}
+            return False, f"No active subscription found for {user_name}"
         subscription.status = Subscription.SubscriptionStatus.CANCELLED
         subscription.save(update_fields=["status"])
-        return {"success": "True"}
+        return (
+            True,
+            f"{user_name} Unsubscribed from {subscription.plan.name}",
+        )

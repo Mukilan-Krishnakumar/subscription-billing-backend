@@ -52,7 +52,6 @@ class SubscriptionListSerializer(serializers.ModelSerializer):
             "plan",
             "start_date",
             "end_date",
-            "next_billing_date",
             "status",
         ]
 
@@ -65,7 +64,6 @@ class SubscriptionSerializer(serializers.ModelSerializer):
             "plan",
             "start_date",
             "end_date",
-            "next_billing_date",
             "status",
         ]
 
@@ -82,4 +80,19 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "issue_date",
             "due_date",
             "status",
+        ]
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    payment_status = serializers.CharField(source="status")
+
+    class Meta:
+        model = models.Invoice
+        fields = [
+            "id",
+            "amount",
+            "currency",
+            "issue_date",
+            "due_date",
+            "payment_status",
         ]

@@ -1,13 +1,13 @@
 import logging
 from zoneinfo import ZoneInfo
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 
-from django.db.models import Q
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db.models import Q
 from celery import shared_task
-from core.models import Invoice, Subscription
 from core.constants import STANDARD_DATE_FORMAT
+from core.models import Invoice, Subscription
 
 logger = logging.getLogger(__name__)
 
@@ -112,3 +112,6 @@ def send_remainder_emails():
         else:
             # TODO: Mark invoice as overdue
             pass
+
+
+# TODO: A task to mark subscription as expired

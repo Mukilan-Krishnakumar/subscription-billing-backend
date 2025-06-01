@@ -39,7 +39,6 @@ class StripeApiClient:
             unit_amount = price["unit_amount"]
             currency = price["currency"]
             product = price["product"]
-            self.logger.info("Price val %s", price)
             if (
                 unit_amount == price_value
                 and currency == currency_value
@@ -60,13 +59,13 @@ class StripeApiClient:
             recurring=recurring_data,
             product=product_id,
         )
-        self.logger.info("Price %s", price)
         return price
 
-    def create_checkout_session(self, price_id):
+    def create_checkout_session(self, price_id, user_id, plan_id):
         checkout_session = stripe.checkout.Session.create(
-            success_url=self.domain_url + "success?session_id={CHECKOUT_SESSION_ID}",
-            cancel_url=self.domain_url + "cancelled/",
+            success_url=self.domain_url
+            + f"payment/success?user={user_id}&plan={plan_id}",
+            cancel_url=self.domain_url + "payment/cancelled/",
             payment_method_types=["card"],
             mode="subscription",
             line_items=[{"price": price_id, "quantity": 1}],
