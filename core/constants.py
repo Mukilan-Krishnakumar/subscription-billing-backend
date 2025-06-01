@@ -143,3 +143,21 @@ SUPPORTED_CURRENCIES = [
 ]
 
 STANDARD_DATE_FORMAT = "YYYY-MM-DD"
+
+
+EMAIL_MESSAGES = {
+    "pending": """
+    Dear {user_name},
+    I hope this message finds you well. This is a friendly reminder that Invoice #{invoice_id} dated {due_date} for {amount} {currency} is currently outstanding and due for payment.
+    If you have already processed this payment, please disregard this message. Otherwise, we would appreciate your prompt attention to settle this invoice by {due_date}.
+    If you have any questions about this invoice or need assistance with payment arrangements, please don't hesitate to reach out to us.
+    Thank you for your continued business.
+    """,
+    "overdue": """
+    Dear {user_name},
+    Our records indicate that Invoice #{invoice_id} for {amount} {currency}, originally due on {due_date}, remains unpaid and is now {overdue_days} overdue.
+    We understand that oversights can occur, and we want to resolve this matter promptly. Please remit payment immediately to bring your account current.
+    If there are any issues preventing payment or if you need to discuss payment arrangements, please contact us within 48 hours so we can work together to find a solution.
+    We value our business relationship and look forward to resolving this matter quickly.
+    """,
+}

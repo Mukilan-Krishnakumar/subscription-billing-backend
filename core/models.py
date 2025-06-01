@@ -43,8 +43,12 @@ class Subscription(BaseModel):
         CANCELLED = "cancelled"
         EXPIRED = "expired"
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    plan = models.ForeignKey(Plan, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, related_name="subscription", on_delete=models.CASCADE
+    )
+    plan = models.ForeignKey(
+        Plan, related_name="subscription", on_delete=models.CASCADE
+    )
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     status = models.TextField(
@@ -61,7 +65,9 @@ class Invoice(BaseModel):
         PAID = "paid"
         OVERDUE = "overdue"
 
-    subscription = models.OneToOneField(Subscription, on_delete=models.CASCADE)
+    subscription = models.OneToOneField(
+        Subscription, related_name="invoice", on_delete=models.CASCADE
+    )
     amount = models.PositiveIntegerField()
     currency = models.TextField(default="usd")
     issue_date = models.DateField()

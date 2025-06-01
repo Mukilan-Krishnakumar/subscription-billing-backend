@@ -174,8 +174,8 @@ LOGGING = {
 
 
 CELERY_BEAT_SCHEDULE = {
-    "schedule_invoice": {
-        "task": "core.tasks.schedule_invoice",
+    "schedule_invoices": {
+        "task": "core.tasks.schedule_invoices",
         "schedule": crontab(minute="*/1"),
         "options": {
             "expires": 15.0,
@@ -190,6 +190,13 @@ CELERY_BEAT_SCHEDULE = {
     },
     "send_remainder_emails": {
         "task": "core.tasks.send_remainder_emails",
+        "schedule": crontab(minute="*/1"),
+        "options": {
+            "expires": 15.0,
+        },
+    },
+    "mark_expired_subscriptions": {
+        "task": "core.tasks.mark_expired_subscriptions",
         "schedule": crontab(minute="*/1"),
         "options": {
             "expires": 15.0,
