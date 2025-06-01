@@ -9,8 +9,13 @@ dependencies = [
     "django>=5.2.1",
     "djangorestframework>=3.16.0",
     "psycopg>=3.2.9",
+    "pytest-django>=4.11.1",
     "python-dateutil>=2.9.0.post0",
     "python-dotenv>=1.1.0",
     "redis>=6.2.0",
     "stripe>=12.2.0",
 ]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "subscription_billing.settings"
+python_files = ["test_*.py", "*_test.py", "testing/python/*.py"]

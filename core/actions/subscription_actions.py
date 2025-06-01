@@ -72,7 +72,7 @@ class UnsubscribeAction:
         user = self.get_user()
         if not user:
             return False, "User with the given user_id doesn't exist"
-        user_name = user.first_name + user.last_name
+        user_name = f"{user.first_name} {user.last_name}"
         try:
             subscription = self.get_active_subscription(user=user)
         except Subscription.MultipleObjectsReturned:
